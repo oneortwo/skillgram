@@ -83,7 +83,7 @@ export function parse(source: string): Model {
     const next = later.find(x => x.line > h.line && x.level <= 3);
     const end = Math.min(next ? next.line : lines.length, sectionEnd);
     const s: Step = {
-      id: 'n' + k, name: h.text, line: h.line + 1, type: 'action', outcomes: [], skill: null, until: null,
+      id: 'n' + k, name: h.text, line: h.line + 1, range: { start: h.line + 1, end }, bodyLine: 0, type: 'action', outcomes: [], skill: null, until: null,
       join: null, text: '', directives: {}, directiveLines: {}, invalid: false, start: false, end: false,
     };
     // Directive block (SPEC 6).
@@ -108,6 +108,7 @@ export function parse(source: string): Model {
       }
     }
     // Instructions.
+    s.bodyLine = j + 1;
     const text: string[] = [];
     let count = 0;
     for (; j < end; j++) {

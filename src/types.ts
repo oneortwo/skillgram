@@ -18,6 +18,10 @@ export interface Step {
   name: string;
   /** 1-based line of the step heading. */
   line: number;
+  /** 1-based lines the step covers, from its heading to the line before the next heading. */
+  range: { start: number; end: number };
+  /** 1-based line where the instructions start, after the directive block. */
+  bodyLine: number;
   type: StepType;
   outcomes: string[];
   skill: string | null;
