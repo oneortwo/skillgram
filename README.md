@@ -6,6 +6,8 @@ Skillgram is a small set of rules on top of the [Agent Skills](https://agentskil
 
 **[Try the playground](https://oneortwo.github.io/skillgram/)** · **[Read the spec](SPEC.md)**
 
+The playground draws the graph as you type, checks the file against the spec, and lets you add and edit steps visually. Every visual edit is written back to the Markdown.
+
 ## What it looks like
 
 ```markdown
@@ -65,7 +67,7 @@ npm install skillgram
 ```
 
 ```js
-import { parse, validate, diff, toMermaid } from 'skillgram';
+import { parse, validate, diff, toMermaid, addStep, updateStep, removeStep } from 'skillgram';
 import { render } from 'skillgram/render';
 
 const model = parse(source);          // steps, edges and problems
@@ -73,6 +75,10 @@ const problems = validate(source);    // just the problems
 const changes = diff(parse(a), parse(b)).changes;
 const mermaid = toMermaid(model);
 const { svg } = render(model);        // laid out with dagre
+
+// Edit a file without touching the rest of it.
+const next = addStep(source, { name: 'Notify', type: 'action', after: [{ name: 'Pay', outcome: null }],
+  outcomes: [], skill: null, until: null, join: null, instructions: 'Tell the requester.' });
 ```
 
 The CLI:

@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Skillgram</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 26 26%27%3E%3Crect x=%278%27 y=%272%27 width=%2710%27 height=%276%27 rx=%272%27 fill=%27none%27 stroke=%27%232443c4%27 stroke-width=%272%27/%3E%3Crect x=%272%27 y=%2718%27 width=%279%27 height=%276%27 rx=%272%27 fill=%27none%27 stroke=%27%23151c27%27 stroke-width=%272%27/%3E%3Crect x=%2715%27 y=%2718%27 width=%279%27 height=%276%27 rx=%273%27 fill=%27none%27 stroke=%27%23151c27%27 stroke-width=%272%27/%3E%3Cpath d=%27M13 8v4M13 12l-6 6M13 12l6 6%27 stroke=%27%238f9bad%27 stroke-width=%272%27 fill=%27none%27/%3E%3C/svg%3E">
 <meta name="description" content="Write agent skills so their steps form a graph. A playground for the Skillgram spec: live graph, validator and diff.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -127,7 +128,59 @@ textarea {
 .sw { display: inline-block; width: 18px; height: 10px; border-radius: 3px; border: 2px solid; vertical-align: -1px; margin-right: 6px; }
 .sw-added { border-color: var(--ok); } .sw-changed { border-color: var(--warn); } .sw-removed { border-color: var(--err); border-style: dashed; }
 
-/* Spec */
+/* Visual editor */
+.ctl.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.ctl.primary:hover { filter: brightness(1.08); }
+.ctl.danger { color: var(--err); }
+.ctl:disabled { opacity: .45; cursor: default; }
+#view-playground .pane:last-child { position: relative; }
+.plus {
+  position: absolute; z-index: 2; width: 28px; height: 28px; margin: -14px 0 0 -14px; border-radius: 50%;
+  border: 2px solid var(--surface); background: var(--accent); color: var(--on-accent);
+  font: 600 18px/1 var(--f-body); cursor: pointer; box-shadow: 0 2px 8px rgb(0 0 0 / .2);
+  display: grid; place-items: center; padding: 0;
+}
+.plus:hover { transform: scale(1.12); }
+.empty p { margin: 0 0 10px; }
+.canvas .node.flash .shape { stroke: var(--accent); stroke-width: 3.5; stroke-dasharray: none; }
+.drawer {
+  position: absolute; z-index: 3; top: 0; right: 0; bottom: 0; width: min(380px, 100%);
+  background: var(--surface); border-left: 1px solid var(--line); box-shadow: -8px 0 24px rgb(0 0 0 / .12);
+  display: flex; flex-direction: column;
+}
+.drawer form { display: flex; flex-direction: column; min-height: 0; height: 100%; }
+.drawer-head { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; border-bottom: 1px solid var(--line); }
+.drawer-head h2 { font: 700 17px var(--f-display); margin: 0; }
+.x { border: 0; background: none; font-size: 22px; line-height: 1; cursor: pointer; color: var(--muted); padding: 2px 6px; border-radius: 6px; }
+.x:hover { background: var(--sunk); color: var(--fg); }
+.drawer-body { flex: 1; min-height: 0; overflow: auto; padding: 14px; display: grid; gap: 14px; align-content: start; }
+.drawer-foot { display: flex; align-items: center; gap: 8px; padding: 10px 14px; border-top: 1px solid var(--line); flex-wrap: wrap; }
+.drawer-foot .spacer { flex: 1; }
+.linkbtn { border: 0; background: none; color: var(--accent); font-size: 13px; cursor: pointer; padding: 0 14px 12px; text-align: left; }
+.field { display: grid; gap: 5px; font-size: 13px; font-weight: 600; }
+.field input:not([type=checkbox]), .field textarea, .deps select {
+  font: 400 14px var(--f-body); color: var(--fg); background: var(--bg); border: 1px solid var(--line);
+  border-radius: 7px; padding: 7px 9px; width: 100%; min-width: 0;
+}
+.field textarea { font: 13px/1.5 var(--f-mono); resize: vertical; white-space: pre-wrap; }
+.field input:focus, .field textarea:focus, .deps select:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+.field small, .hint { font-weight: 400; color: var(--muted); font-size: 12px; margin: 0; }
+.field-msg { margin: -8px 0 0; color: var(--err); font-size: 12.5px; }
+.check { display: flex; align-items: center; gap: 8px; font-weight: 500; }
+.types { border: 0; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 6px; }
+.types legend { font-size: 13px; font-weight: 600; padding: 0; margin-bottom: 5px; }
+.type-opt { position: relative; }
+.type-opt input { position: absolute; opacity: 0; inset: 0; cursor: pointer; }
+.type-opt span { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 4px 6px; border: 1px solid var(--line); border-radius: 8px; font-size: 12.5px; font-weight: 500; text-align: center; }
+.type-opt input:checked + span { border-color: var(--accent); background: var(--accent-soft); box-shadow: inset 0 0 0 1px var(--accent); }
+.type-opt input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; }
+.type-opt svg { display: block; }
+.deps { display: grid; gap: 4px; max-height: 190px; overflow: auto; border: 1px solid var(--line); border-radius: 8px; padding: 6px; background: var(--bg); }
+.dep { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 8px; font-weight: 400; font-size: 13.5px; padding: 2px 4px; }
+.dep select { width: auto; padding: 3px 6px; font-size: 12.5px; }
+.deps:empty::before { content: "No other steps yet."; color: var(--muted); font-weight: 400; font-size: 13px; padding: 4px; }
+
+/* Spec page */
 .doc { flex: 1; min-height: 0; overflow: auto; padding: 0 max(16px, env(safe-area-inset-right)) 0 max(16px, env(safe-area-inset-left)); }
 .doc-inner { max-width: 72rem; margin: 0 auto; display: grid; grid-template-columns: 13rem minmax(0, 1fr); gap: 48px; padding-block: 40px 96px; }
 .toc { position: sticky; top: 24px; align-self: start; font-size: 13.5px; }
@@ -219,11 +272,41 @@ textarea {
         <button type="button" data-dir="LR" aria-pressed="false">Left to right</button>
       </div>
       <div class="seg"><button type="button" id="desc" aria-pressed="false">Descriptions</button></div>
+      <button class="ctl" type="button" id="undo" disabled>Undo</button>
+      <button class="ctl primary" type="button" id="add-step">+ Add step</button>
     </div>
     <div class="canvas" id="canvas">
       <div class="canvas-inner" id="graph"></div>
-      <div class="empty" id="empty" hidden>Add a <code>## Steps</code> section with <code>###</code> steps to see the graph.</div>
+      <button type="button" class="plus" id="plus" hidden aria-label="Add a step after this one" title="Add a step after this one">+</button>
+      <div class="empty" id="empty" hidden><div><p>No steps yet.</p><button type="button" class="ctl primary" id="add-first">+ Add the first step</button></div></div>
     </div>
+    <aside class="drawer" id="drawer" hidden aria-labelledby="drawer-title">
+      <form id="step-form" novalidate>
+        <div class="drawer-head">
+          <h2 id="drawer-title">Add a step</h2>
+          <button type="button" class="x" id="drawer-close" aria-label="Close">×</button>
+        </div>
+        <div class="drawer-body">
+          <fieldset class="types" id="f-types"><legend>Type</legend></fieldset>
+          <label class="field">Name<input id="f-name" autocomplete="off" placeholder="What happens, in a few words"></label>
+          <p class="field-msg" id="f-name-msg" hidden></p>
+          <div class="field" id="f-after-wrap"><span>Waits for</span><div class="deps" id="f-after"></div><p class="hint" id="f-after-hint">Nothing selected: this step starts the flow.</p></div>
+          <label class="field" id="f-join-wrap"><span class="check"><input type="checkbox" id="f-join"> Wait for all of them</span><small>Without this, the step runs once any of them is done.</small></label>
+          <label class="field" id="f-outcomes-wrap">Outcomes<input id="f-outcomes" autocomplete="off" placeholder="approved, rejected"><small>Comma separated. At least two.</small></label>
+          <label class="field" id="f-skill-wrap">Skill to run<input id="f-skill" autocomplete="off" placeholder="send-invoice"><small>Lowercase letters, digits and hyphens.</small></label>
+          <label class="field">Repeat until<input id="f-until" autocomplete="off" placeholder="Optional, like: every file is processed"></label>
+          <label class="field">Instructions<textarea id="f-text" rows="6" placeholder="What the agent should do in this step."></textarea></label>
+        </div>
+        <div class="drawer-foot">
+          <button type="submit" class="ctl primary" id="f-submit">Add step</button>
+          <button type="button" class="ctl" id="f-cancel">Cancel</button>
+          <span class="spacer"></span>
+          <button type="button" class="ctl" id="f-next" hidden>+ Next step</button>
+          <button type="button" class="ctl danger" id="f-delete" hidden>Delete</button>
+        </div>
+        <button type="button" class="linkbtn" id="f-source" hidden>Show in the text</button>
+      </form>
+    </aside>
   </section>
 </div>
 
@@ -303,7 +386,7 @@ Wait for a teammate to approve the draft.
 </script>
 
 <script type="module">
-import { parse, diff, toMermaid } from './lib/index.js';
+import { parse, diff, toMermaid, addStep, updateStep, removeStep, readStep } from './lib/index.js';
 import { render, STYLES } from './lib/render.js';
 import { marked } from 'marked';
 
@@ -366,6 +449,7 @@ function drawPlayground() {
   if ($('#view-playground').hidden) return;
   const out = render(model, { direction: dir, descriptions: desc, measure, interactive: true, idPrefix: 'pg' });
   $('#empty').hidden = !!out;
+  $('#plus').hidden = true;
   placeGraph($('#graph'), $('#canvas'), out);
 }
 function gotoLine(n) {
@@ -398,7 +482,8 @@ $('#problems').addEventListener('mouseover', ev => {
 });
 const openNode = ev => {
   const g = ev.target.closest('.node');
-  if (g) gotoLine(+g.dataset.line);
+  const s = g && model.steps.find(x => x.id === g.dataset.id);
+  if (s) openEditor('edit', s.name);
 };
 $('#graph').addEventListener('click', openNode);
 $('#graph').addEventListener('keydown', ev => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); openNode(ev); } });
@@ -408,6 +493,193 @@ document.querySelectorAll('[data-dir]').forEach(b => b.addEventListener('click',
   drawPlayground();
 }));
 $('#desc').addEventListener('click', () => { desc = !desc; $('#desc').setAttribute('aria-pressed', desc); drawPlayground(); });
+
+/* Visual editor */
+const TYPES = [
+  ['action', 'Action', 'The agent does it'],
+  ['gate', 'Gate', 'Agent decides'],
+  ['human', 'Human', 'Waits for a person'],
+  ['human gate', 'Human gate', 'A person decides'],
+  ['skill', 'Skill', 'Runs another skill'],
+];
+function typeIcon(t) {
+  const w = 34, h = 18;
+  const cls = 'node t-' + t.replace(' ', '-');
+  let s;
+  if (t === 'gate' || t === 'human gate') s = `<polygon class="shape" points="6,0 ${w - 6},0 ${w},${h / 2} ${w - 6},${h} 6,${h} 0,${h / 2}"/>`;
+  else if (t === 'human') s = `<rect class="shape" width="${w}" height="${h}" rx="${h / 2}"/>`;
+  else if (t === 'skill') s = `<rect class="shape" width="${w}" height="${h}" rx="2"/><line class="bar" x1="4" y1="0" x2="4" y2="${h}"/><line class="bar" x1="${w - 4}" y1="0" x2="${w - 4}" y2="${h}"/>`;
+  else s = `<rect class="shape" width="${w}" height="${h}" rx="4"/>`;
+  return `<svg width="${w + 4}" height="${h + 4}" viewBox="-2 -2 ${w + 4} ${h + 4}" aria-hidden="true"><g class="${cls}">${s}</g></svg>`;
+}
+$('#f-types').insertAdjacentHTML('beforeend', TYPES.map(([v, label, hint]) =>
+  `<label class="type-opt" title="${hint}"><input type="radio" name="f-type" value="${v}"><span>${typeIcon(v)}${label}</span></label>`).join(''));
+
+const undoStack = [];
+let editing = null;
+function commit(next, focusName) {
+  if (next === ta.value) return;
+  undoStack.push(ta.value);
+  $('#undo').disabled = false;
+  ta.value = next;
+  update();
+  if (focusName) {
+    const s = model.steps.find(x => x.name.toLowerCase() === focusName.trim().toLowerCase());
+    const n = s && document.querySelector(`#graph [data-id="${s.id}"]`);
+    if (n) { n.classList.add('flash'); setTimeout(() => n.classList.remove('flash'), 1200); }
+    if (s) ta.scrollTop = Math.max(0, (s.line - 1) * 20 - ta.clientHeight / 3);
+  }
+}
+$('#undo').addEventListener('click', () => {
+  if (!undoStack.length) return;
+  ta.value = undoStack.pop();
+  $('#undo').disabled = !undoStack.length;
+  update();
+});
+
+const currentType = () => document.querySelector('input[name="f-type"]:checked')?.value ?? 'action';
+function syncFields() {
+  const t = currentType();
+  const gate = t === 'gate' || t === 'human gate';
+  $('#f-outcomes-wrap').hidden = !gate;
+  $('#f-skill-wrap').hidden = t !== 'skill';
+  const checked = [...document.querySelectorAll('#f-after input[type=checkbox]:checked')];
+  $('#f-join-wrap').hidden = checked.length < 2;
+  $('#f-after-hint').hidden = checked.length > 0;
+  document.querySelectorAll('#f-after .dep').forEach(d => {
+    const sel = d.querySelector('select');
+    if (sel) sel.disabled = !d.querySelector('input').checked;
+  });
+}
+function renderDeps(selfName, deps) {
+  const others = model.steps.filter(s => s.name && s.name.toLowerCase() !== (selfName ?? '').toLowerCase());
+  $('#f-after').innerHTML = others.map(s => {
+    const dep = deps.find(d => d.name.toLowerCase() === s.name.toLowerCase());
+    const gate = s.type === 'gate' || s.type === 'human gate';
+    const sel = gate && s.outcomes.length
+      ? `<select aria-label="Outcome of ${esc(s.name)}">${s.outcomes.map(o => `<option${dep && dep.outcome?.toLowerCase() === o.toLowerCase() ? ' selected' : ''}>${esc(o)}</option>`).join('')}</select>`
+      : '<span></span>';
+    return `<label class="dep"><input type="checkbox" data-name="${esc(s.name)}"${dep ? ' checked' : ''}><span>${esc(s.name)}</span>${sel}</label>`;
+  }).join('');
+}
+function openEditor(mode, name, parent) {
+  const input = mode === 'edit' ? readStep(ta.value, name) : null;
+  if (mode === 'edit' && !input) return;
+  editing = { mode, name: input?.name ?? null };
+  $('#drawer-title').textContent = mode === 'edit' ? 'Edit step' : 'Add a step';
+  $('#f-submit').textContent = mode === 'edit' ? 'Save' : 'Add step';
+  $('#f-delete').hidden = $('#f-next').hidden = $('#f-source').hidden = mode !== 'edit';
+  const type = input?.type ?? 'action';
+  document.querySelectorAll('input[name="f-type"]').forEach(r => { r.checked = r.value === type; });
+  $('#f-name').value = input?.name ?? '';
+  $('#f-outcomes').value = (input?.outcomes ?? []).join(', ');
+  $('#f-skill').value = input?.skill ?? '';
+  $('#f-until').value = input?.until ?? '';
+  $('#f-text').value = input?.instructions ?? '';
+  $('#f-join').checked = input?.join === 'all';
+  let deps = input?.after ?? [];
+  if (mode === 'add' && parent) {
+    const p = model.steps.find(s => s.name === parent);
+    let outcome = null;
+    if (p && (p.type === 'gate' || p.type === 'human gate') && p.outcomes.length) {
+      const used = new Set(model.edges.filter(e => e.from === p && e.outcome).map(e => e.outcome.toLowerCase()));
+      outcome = p.outcomes.find(o => !used.has(o.toLowerCase())) ?? p.outcomes[0];
+    }
+    deps = [{ name: parent, outcome }];
+  }
+  renderDeps(input?.name, deps);
+  $('#f-name-msg').hidden = true;
+  $('#drawer').hidden = false;
+  $('#plus').hidden = true;
+  syncFields();
+  setTimeout(() => $('#f-name').focus(), 0);
+}
+function closeEditor() {
+  $('#drawer').hidden = true;
+  editing = null;
+}
+function readForm() {
+  const type = currentType();
+  const gate = type === 'gate' || type === 'human gate';
+  const after = [...document.querySelectorAll('#f-after .dep')].filter(d => d.querySelector('input').checked).map(d => ({
+    name: d.querySelector('input').dataset.name,
+    outcome: d.querySelector('select')?.value ?? null,
+  }));
+  return {
+    name: $('#f-name').value.trim(),
+    type,
+    after,
+    outcomes: gate ? $('#f-outcomes').value.split(',').map(x => x.trim()).filter(Boolean) : [],
+    skill: type === 'skill' ? ($('#f-skill').value.trim() || null) : null,
+    until: $('#f-until').value.trim() || null,
+    join: after.length > 1 && $('#f-join').checked ? 'all' : null,
+    instructions: $('#f-text').value,
+  };
+}
+function nameProblem(name) {
+  if (!name) return 'Give the step a name.';
+  if (/[,()]/.test(name)) return 'Names can\u2019t contain commas or brackets.';
+  const clash = model.steps.find(s => s.name.toLowerCase() === name.toLowerCase());
+  if (clash && clash.name.toLowerCase() !== (editing?.name ?? '').toLowerCase()) return 'There is already a step with that name.';
+  return null;
+}
+$('#step-form').addEventListener('change', syncFields);
+$('#f-name').addEventListener('input', () => { $('#f-name-msg').hidden = true; });
+$('#step-form').addEventListener('submit', ev => {
+  ev.preventDefault();
+  const input = readForm();
+  const problem = nameProblem(input.name);
+  if (problem) {
+    const msg = $('#f-name-msg');
+    msg.textContent = problem;
+    msg.hidden = false;
+    $('#f-name').focus();
+    return;
+  }
+  const next = editing.mode === 'edit'
+    ? updateStep(ta.value, editing.name, input)
+    : addStep(ta.value, input, { after: input.after.length ? input.after[input.after.length - 1].name : undefined });
+  closeEditor();
+  commit(next, input.name);
+});
+$('#f-cancel').addEventListener('click', closeEditor);
+$('#drawer-close').addEventListener('click', closeEditor);
+$('#drawer').addEventListener('keydown', ev => { if (ev.key === 'Escape') closeEditor(); });
+$('#f-delete').addEventListener('click', () => {
+  const name = editing.name;
+  closeEditor();
+  commit(removeStep(ta.value, name));
+});
+$('#f-next').addEventListener('click', () => openEditor('add', null, editing.name));
+$('#f-source').addEventListener('click', () => {
+  const s = model.steps.find(x => x.name === editing.name);
+  closeEditor();
+  if (s) gotoLine(s.line);
+});
+$('#add-step').addEventListener('click', () => {
+  const last = model.steps[model.steps.length - 1];
+  openEditor('add', null, last?.name);
+});
+$('#add-first').addEventListener('click', () => openEditor('add'));
+
+let plusFor = null;
+function showPlus(g) {
+  if (!$('#drawer').hidden) return;
+  const s = model.steps.find(x => x.id === g.dataset.id);
+  if (!s) return;
+  plusFor = s.name;
+  const c = $('#canvas'), r = g.getBoundingClientRect(), cr = c.getBoundingClientRect();
+  const plus = $('#plus');
+  const x = dir === 'LR' ? r.right - cr.left + c.scrollLeft + 16 : r.left + r.width / 2 - cr.left + c.scrollLeft;
+  const y = dir === 'LR' ? r.top + r.height / 2 - cr.top + c.scrollTop : r.bottom - cr.top + c.scrollTop + 16;
+  plus.style.left = x + 'px';
+  plus.style.top = y + 'px';
+  plus.hidden = false;
+}
+$('#graph').addEventListener('mouseover', ev => { const g = ev.target.closest('.node'); if (g) showPlus(g); });
+$('#graph').addEventListener('focusin', ev => { const g = ev.target.closest('.node'); if (g) showPlus(g); });
+$('#canvas').addEventListener('mouseleave', () => { $('#plus').hidden = true; });
+$('#plus').addEventListener('click', () => { if (plusFor) openEditor('add', null, plusFor); });
 
 /* Diff */
 const before = $('#before'), after = $('#after');
