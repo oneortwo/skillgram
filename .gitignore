@@ -3,3 +3,5 @@ dist/
 .DS_Store
 site/lib/
 site/examples/
+site/fixtures/
+site/SPEC.md
