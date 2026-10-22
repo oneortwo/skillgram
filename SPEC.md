@@ -19,33 +19,46 @@ Tools that check many skills should only check skills that opt in. A tool that i
 
 ## 2. Example
 
+A complete Skillgram file. The frontmatter is ordinary Agent Skills frontmatter plus the opt-in marker from section 1.
+
 ```markdown
+---
+name: expense-report
+description: Check a submitted expense report and send it for payment.
+metadata:
+  skillgram: "0.1"
+---
+
+# Expense report
+
+Checks an expense report against its receipts and pays it out.
+
 ## Steps
 
-### Process statements
-Until: every file is processed
+### Collect receipts
+Until: every line on the report has a receipt
 
-Upload and watch each statement.
+Match each line on the report to a receipt. Ask the submitter for any that are missing.
 
 ### Check totals
-After: Process statements
+After: Collect receipts
 Type: gate
 Outcomes: ok, off
 
-Compare the totals with the summary sheet.
+Compare the report total with the sum of the receipts.
 
-### Ask the sender
+### Ask the submitter
 After: Check totals (off)
 Type: human
 
-Send the gap to the sender and wait for an answer.
+Send the difference to the submitter and wait for a corrected report.
 
-### Price it
+### Pay it out
 After: Check totals (ok)
 Type: skill
-Skill: pricing
+Skill: schedule-payment
 
-Run the pricing skill on the checked files.
+Pay the total with the next payroll run.
 ```
 
 ## 3. Reading the file
