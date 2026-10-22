@@ -1,0 +1,18 @@
+{
+  "steps": [
+    {
+      "name": "Check",
+      "type": "gate",
+      "start": true,
+      "end": true
+    }
+  ],
+  "edges": [],
+  "problems": [
+    {
+      "code": "G1",
+      "severity": "error",
+      "line": 4
+    }
+  ]
+}

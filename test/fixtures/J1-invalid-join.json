@@ -1,0 +1,46 @@
+{
+  "steps": [
+    {
+      "name": "A",
+      "type": "action",
+      "start": true,
+      "end": false
+    },
+    {
+      "name": "B",
+      "type": "action",
+      "start": false,
+      "end": false
+    },
+    {
+      "name": "C",
+      "type": "action",
+      "start": false,
+      "end": true
+    }
+  ],
+  "edges": [
+    [
+      "A",
+      "B",
+      null
+    ],
+    [
+      "A",
+      "C",
+      null
+    ],
+    [
+      "B",
+      "C",
+      null
+    ]
+  ],
+  "problems": [
+    {
+      "code": "J1",
+      "severity": "error",
+      "line": 14
+    }
+  ]
+}

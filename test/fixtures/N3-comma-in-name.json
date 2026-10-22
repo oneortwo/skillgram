@@ -1,0 +1,18 @@
+{
+  "steps": [
+    {
+      "name": "Upload, then wait",
+      "type": "action",
+      "start": true,
+      "end": true
+    }
+  ],
+  "edges": [],
+  "problems": [
+    {
+      "code": "N3",
+      "severity": "error",
+      "line": 3
+    }
+  ]
+}

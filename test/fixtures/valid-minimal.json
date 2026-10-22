@@ -1,0 +1,24 @@
+{
+  "steps": [
+    {
+      "name": "Draft reply",
+      "type": "action",
+      "start": true,
+      "end": false
+    },
+    {
+      "name": "Approve",
+      "type": "human",
+      "start": false,
+      "end": true
+    }
+  ],
+  "edges": [
+    [
+      "Draft reply",
+      "Approve",
+      null
+    ]
+  ],
+  "problems": []
+}

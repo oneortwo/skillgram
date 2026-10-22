@@ -1,0 +1,57 @@
+{
+  "steps": [
+    {
+      "name": "Start",
+      "type": "action",
+      "start": true,
+      "end": false
+    },
+    {
+      "name": "A",
+      "type": "action",
+      "start": false,
+      "end": false
+    },
+    {
+      "name": "B",
+      "type": "action",
+      "start": false,
+      "end": false
+    },
+    {
+      "name": "C",
+      "type": "action",
+      "start": false,
+      "end": false
+    }
+  ],
+  "edges": [
+    [
+      "Start",
+      "A",
+      null
+    ],
+    [
+      "C",
+      "A",
+      null
+    ],
+    [
+      "A",
+      "B",
+      null
+    ],
+    [
+      "B",
+      "C",
+      null
+    ]
+  ],
+  "problems": [
+    {
+      "code": "F2",
+      "severity": "error",
+      "line": 7
+    }
+  ]
+}

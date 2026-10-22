@@ -1,0 +1,52 @@
+{
+  "steps": [
+    {
+      "name": "Check",
+      "type": "gate",
+      "start": true,
+      "end": false
+    },
+    {
+      "name": "Go",
+      "type": "action",
+      "start": false,
+      "end": true
+    },
+    {
+      "name": "Fix",
+      "type": "action",
+      "start": false,
+      "end": true
+    },
+    {
+      "name": "Stop",
+      "type": "action",
+      "start": false,
+      "end": true
+    }
+  ],
+  "edges": [
+    [
+      "Check",
+      "Go",
+      "ok"
+    ],
+    [
+      "Check",
+      "Fix",
+      null
+    ],
+    [
+      "Check",
+      "Stop",
+      "off"
+    ]
+  ],
+  "problems": [
+    {
+      "code": "E3",
+      "severity": "error",
+      "line": 15
+    }
+  ]
+}

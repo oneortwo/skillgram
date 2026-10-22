@@ -1,0 +1,24 @@
+{
+  "steps": [
+    {
+      "name": "First",
+      "type": "action",
+      "start": true,
+      "end": false
+    },
+    {
+      "name": "Second",
+      "type": "action",
+      "start": false,
+      "end": true
+    }
+  ],
+  "edges": [
+    [
+      "First",
+      "Second",
+      null
+    ]
+  ],
+  "problems": []
+}

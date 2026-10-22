@@ -203,3 +203,4 @@ The version in `metadata.skillgram` names the spec version a skill follows. Mino
 ## 12. Open questions
 
 - **Stable step ids.** Progress tracking stores step names, so renaming a step loses its history. An optional `Id:` directive would fix that. It is not in 0.1.
+- **Mixed joins.** A step can't say "wait for A, and for either B or C". `Join:` applies to all of a step's dependencies. Today the workaround is an extra step that joins B and C first.

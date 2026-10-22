@@ -1,0 +1,24 @@
+{
+  "steps": [
+    {
+      "name": "Upload statements",
+      "type": "action",
+      "start": true,
+      "end": true
+    },
+    {
+      "name": "Check",
+      "type": "action",
+      "start": false,
+      "end": true
+    }
+  ],
+  "edges": [],
+  "problems": [
+    {
+      "code": "E1",
+      "severity": "error",
+      "line": 8
+    }
+  ]
+}

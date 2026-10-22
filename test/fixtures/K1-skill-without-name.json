@@ -1,0 +1,18 @@
+{
+  "steps": [
+    {
+      "name": "Run it",
+      "type": "skill",
+      "start": true,
+      "end": true
+    }
+  ],
+  "edges": [],
+  "problems": [
+    {
+      "code": "K1",
+      "severity": "error",
+      "line": 4
+    }
+  ]
+}

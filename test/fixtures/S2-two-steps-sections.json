@@ -1,0 +1,18 @@
+{
+  "steps": [
+    {
+      "name": "Only",
+      "type": "action",
+      "start": true,
+      "end": true
+    }
+  ],
+  "edges": [],
+  "problems": [
+    {
+      "code": "S2",
+      "severity": "error",
+      "line": 7
+    }
+  ]
+}

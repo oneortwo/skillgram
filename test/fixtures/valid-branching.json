@@ -1,0 +1,89 @@
+{
+  "steps": [
+    {
+      "name": "Collect files",
+      "type": "action",
+      "start": true,
+      "end": false
+    },
+    {
+      "name": "Check totals",
+      "type": "gate",
+      "start": false,
+      "end": false
+    },
+    {
+      "name": "Ask sender",
+      "type": "human gate",
+      "start": false,
+      "end": false
+    },
+    {
+      "name": "Stop",
+      "type": "action",
+      "start": false,
+      "end": true
+    },
+    {
+      "name": "Price",
+      "type": "skill",
+      "start": false,
+      "end": false
+    },
+    {
+      "name": "Archive",
+      "type": "action",
+      "start": false,
+      "end": false
+    },
+    {
+      "name": "Report",
+      "type": "action",
+      "start": false,
+      "end": true
+    }
+  ],
+  "edges": [
+    [
+      "Collect files",
+      "Check totals",
+      null
+    ],
+    [
+      "Check totals",
+      "Ask sender",
+      "off"
+    ],
+    [
+      "Ask sender",
+      "Stop",
+      "give up"
+    ],
+    [
+      "Check totals",
+      "Price",
+      "ok"
+    ],
+    [
+      "Ask sender",
+      "Price",
+      "fixed"
+    ],
+    [
+      "Collect files",
+      "Archive",
+      null
+    ],
+    [
+      "Price",
+      "Report",
+      null
+    ],
+    [
+      "Archive",
+      "Report",
+      null
+    ]
+  ],
+  "problems": []
+}

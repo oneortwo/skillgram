@@ -1,0 +1,18 @@
+{
+  "steps": [
+    {
+      "name": "Start",
+      "type": "action",
+      "start": true,
+      "end": true
+    }
+  ],
+  "edges": [],
+  "problems": [
+    {
+      "code": "G2",
+      "severity": "error",
+      "line": 4
+    }
+  ]
+}

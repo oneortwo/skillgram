@@ -1,0 +1,30 @@
+{
+  "steps": [
+    {
+      "name": "Start",
+      "type": "action",
+      "start": true,
+      "end": false
+    },
+    {
+      "name": "Decide",
+      "type": "action",
+      "start": false,
+      "end": true
+    }
+  ],
+  "edges": [
+    [
+      "Start",
+      "Decide",
+      null
+    ]
+  ],
+  "problems": [
+    {
+      "code": "D1",
+      "severity": "error",
+      "line": 9
+    }
+  ]
+}

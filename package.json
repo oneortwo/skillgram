@@ -42,8 +42,9 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "test": "npm run build && node --test test/",
-    "check": "npm test"
+    "test": "npm run build && node --test test/*.test.mjs",
+    "check": "npm test",
+    "fixtures:snapshot": "npm run build && node scripts/snapshot-fixtures.mjs"
   },
   "dependencies": {
     "@dagrejs/dagre": "^3.1.1"

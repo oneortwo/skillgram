@@ -1,0 +1,11 @@
+{
+  "steps": [],
+  "edges": [],
+  "problems": [
+    {
+      "code": "S1",
+      "severity": "error",
+      "line": 1
+    }
+  ]
+}

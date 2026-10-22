@@ -1,0 +1,30 @@
+{
+  "steps": [
+    {
+      "name": "Start",
+      "type": "action",
+      "start": true,
+      "end": false
+    },
+    {
+      "name": "Loop",
+      "type": "action",
+      "start": false,
+      "end": true
+    }
+  ],
+  "edges": [
+    [
+      "Start",
+      "Loop",
+      null
+    ]
+  ],
+  "problems": [
+    {
+      "code": "E2",
+      "severity": "error",
+      "line": 8
+    }
+  ]
+}
