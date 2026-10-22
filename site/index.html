@@ -1,0 +1,437 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Skillgram</title>
+<meta name="description" content="Write agent skills so their steps form a graph. A playground for the Skillgram spec: live graph, validator and diff.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<script type="importmap">
+{ "imports": { "@dagrejs/dagre": "https://cdn.jsdelivr.net/npm/@dagrejs/dagre@3.1.1/+esm" } }
+</script>
+<style>
+/* Layout: app bar, then a split workbench (sources | graph). */
+:root {
+  --bg: #f4f6f9; --surface: #ffffff; --sunk: #eaeef4; --fg: #151c27; --muted: #566173;
+  --line: #d6dce5; --line-strong: #8f9bad; --accent: #2443c4; --accent-soft: #e4e9fb; --on-accent: #ffffff;
+  --err: #be3128; --err-soft: #fbe7e5; --warn: #946000; --warn-soft: #fbefd6; --ok: #1c7246; --ok-soft: #dff1e7;
+  --grid-dot: #d3d9e2;
+  --sg-bg: var(--surface); --sg-node: #ffffff; --sg-fg: var(--fg); --sg-muted: var(--muted); --sg-line: var(--line-strong);
+  --sg-gate: #c0821a; --sg-gate-bg: #fdf1dc; --sg-human: #26806e; --sg-human-bg: #e0f2ee;
+  --sg-skill: #2443c4; --sg-skill-bg: #e4e9fb; --sg-err: var(--err); --sg-ok: var(--ok); --sg-warn: var(--warn);
+  --f-display: "Bricolage Grotesque", system-ui, sans-serif;
+  --f-body: "Instrument Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0e1218; --surface: #151a23; --sunk: #0a0d12; --fg: #e5e9f0; --muted: #96a1b2;
+    --line: #262f3e; --line-strong: #56637a; --accent: #8aa4ff; --accent-soft: #1b2546; --on-accent: #0e1218;
+    --err: #ff6f62; --err-soft: #3a1b19; --warn: #f0b44c; --warn-soft: #33270f; --ok: #52c98d; --ok-soft: #11301f;
+    --grid-dot: #222a37;
+    --sg-node: #1a2029; --sg-gate: #d9a044; --sg-gate-bg: #2f2513; --sg-human: #4fc0ab; --sg-human-bg: #10302a;
+    --sg-skill: #8aa4ff; --sg-skill-bg: #1b2546;
+    color-scheme: dark;
+  }
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body { display: flex; flex-direction: column; background: var(--bg); color: var(--fg); font: 15px/1.5 var(--f-body); }
+button, select { font: inherit; color: inherit; }
+a { color: var(--accent); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+code { font-family: var(--f-mono); font-size: 0.88em; }
+[hidden] { display: none !important; }
+
+.bar {
+  flex: none; display: flex; align-items: center; flex-wrap: wrap; gap: 8px 20px;
+  padding: 10px max(16px, env(safe-area-inset-right)) 10px max(16px, env(safe-area-inset-left));
+  background: var(--surface); border-bottom: 1px solid var(--line);
+}
+.brand { display: flex; align-items: center; gap: 10px; }
+.brand b { font-family: var(--f-display); font-weight: 700; font-size: 20px; letter-spacing: -0.01em; }
+.tagline { color: var(--muted); font-size: 14px; }
+.nav { display: flex; gap: 4px; margin-left: auto; align-items: center; }
+.tab { border: 0; background: none; cursor: pointer; padding: 6px 12px; border-radius: 7px; color: var(--muted); font-weight: 500; text-decoration: none; }
+.tab:hover { color: var(--fg); background: var(--sunk); }
+.tab[aria-current="page"] { color: var(--fg); background: var(--accent-soft); }
+
+main { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.pg {
+  flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(340px, 5fr) minmax(0, 7fr); gap: 14px;
+  padding: 14px max(14px, env(safe-area-inset-right)) 14px max(14px, env(safe-area-inset-left));
+}
+.pane { display: flex; flex-direction: column; min-height: 0; min-width: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.pane-head { flex: none; display: flex; align-items: center; flex-wrap: wrap; gap: 8px; padding: 8px 10px 8px 14px; border-bottom: 1px solid var(--line); }
+.pane-title { font-family: var(--f-mono); font-size: 12px; color: var(--muted); margin-right: auto; }
+.ctl { border: 1px solid var(--line); background: var(--surface); border-radius: 7px; padding: 4px 10px; font-size: 13px; cursor: pointer; }
+.ctl:hover { border-color: var(--line-strong); }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 7px; overflow: hidden; }
+.seg button { border: 0; background: none; padding: 4px 10px; font-size: 13px; cursor: pointer; color: var(--muted); }
+.seg button + button { border-left: 1px solid var(--line); }
+.seg button[aria-pressed="true"] { background: var(--accent-soft); color: var(--fg); }
+
+.editor { flex: 1; min-height: 0; display: flex; }
+.gutter {
+  flex: none; width: 46px; overflow: hidden; padding: 12px 0 80px; text-align: right;
+  font: 12px/20px var(--f-mono); color: var(--line-strong); background: var(--sunk); border-right: 1px solid var(--line);
+  user-select: none; font-variant-numeric: tabular-nums;
+}
+.gutter div { padding-right: 9px; height: 20px; }
+.gutter div.err { color: var(--err); background: var(--err-soft); font-weight: 500; }
+.gutter div.warn { color: var(--warn); background: var(--warn-soft); font-weight: 500; }
+textarea {
+  flex: 1; min-width: 0; min-height: 0; border: 0; resize: none; outline: none; margin: 0; padding: 12px 14px;
+  background: transparent; color: var(--fg); font: 13px/20px var(--f-mono); tab-size: 2; white-space: pre; overflow: auto;
+}
+.vers { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.ver-head { display: flex; align-items: center; gap: 10px; padding: 7px 14px; border-top: 1px solid var(--line); background: var(--sunk); font-size: 13px; font-weight: 600; }
+.ver-head:first-child { border-top: 0; }
+
+.list { flex: none; max-height: 38%; display: flex; flex-direction: column; border-top: 1px solid var(--line); min-height: 0; }
+.list-head { display: flex; align-items: center; gap: 10px; padding: 8px 14px; }
+.list-head h2 { font-size: 13px; font-weight: 600; margin: 0; }
+.list ul { list-style: none; margin: 0; padding: 0 6px 8px; overflow: auto; min-height: 0; }
+.list li.none { padding: 6px 8px 10px; color: var(--muted); font-size: 13.5px; }
+.status { font-family: var(--f-mono); font-size: 11.5px; border-radius: 999px; padding: 2px 9px; }
+.s-ok { background: var(--ok-soft); color: var(--ok); }
+.s-warn { background: var(--warn-soft); color: var(--warn); }
+.s-err { background: var(--err-soft); color: var(--err); }
+.row { display: grid; grid-template-columns: auto auto 1fr; gap: 2px 10px; align-items: baseline; width: 100%; text-align: left; border: 0; background: none; border-radius: 7px; padding: 6px 8px; cursor: pointer; font-size: 13.5px; }
+.row:hover, .row:focus-visible { background: var(--sunk); }
+.row .tag { font-family: var(--f-mono); font-size: 11px; border-radius: 4px; padding: 0 6px; }
+.row .meta { font-family: var(--f-mono); font-size: 12px; color: var(--muted); }
+.row .msg { grid-column: 1 / -1; }
+.row.error .tag, .row.removed .tag { background: var(--err-soft); color: var(--err); }
+.row.warning .tag, .row.changed .tag, .row.renamed .tag { background: var(--warn-soft); color: var(--warn); }
+.row.added .tag { background: var(--ok-soft); color: var(--ok); }
+.row.chg { grid-template-columns: auto 1fr; cursor: default; }
+#view-diff .list { max-height: 30%; }
+.row.chg .msg { grid-column: auto; }
+
+.canvas {
+  flex: 1; min-height: 0; overflow: auto; position: relative; background-color: var(--sunk);
+  background-image: radial-gradient(var(--grid-dot) 1px, transparent 1.2px); background-size: 18px 18px;
+}
+.canvas-inner { min-width: 100%; min-height: 100%; width: max-content; display: flex; justify-content: center; align-items: flex-start; padding: 16px; }
+.canvas svg { display: block; max-width: none; }
+.canvas .node[role="button"] { cursor: pointer; }
+.canvas .node.hl .shape { stroke: var(--accent); stroke-width: 3; stroke-dasharray: none; }
+.empty { position: absolute; inset: 0; display: grid; place-items: center; color: var(--muted); padding: 24px; text-align: center; }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 14px; padding: 8px 14px; border-top: 1px solid var(--line); font-size: 12.5px; color: var(--muted); }
+.sw { display: inline-block; width: 18px; height: 10px; border-radius: 3px; border: 2px solid; vertical-align: -1px; margin-right: 6px; }
+.sw-added { border-color: var(--ok); } .sw-changed { border-color: var(--warn); } .sw-removed { border-color: var(--err); border-style: dashed; }
+
+@media (max-width: 900px) {
+  .pg { display: flex; flex-direction: column; overflow: auto; }
+  .pane { flex: none; }
+  .editor, .vers { height: 55vh; flex: none; }
+  .list { max-height: none; }
+  .list ul { max-height: 260px; }
+  .canvas { height: 70vh; flex: none; }
+  .tagline { display: none; }
+}
+</style>
+</head>
+<body>
+<header class="bar">
+  <div class="brand"><b>Skillgram</b><span class="tagline">Write agent skills so their steps form a graph.</span></div>
+  <nav class="nav" aria-label="Pages">
+    <button class="tab" type="button" data-v="playground" id="tab-playground">Playground</button>
+    <button class="tab" type="button" data-v="diff" id="tab-diff">Diff</button>
+    <a class="tab" href="https://github.com/oneortwo/skillgram/blob/main/SPEC.md">Spec</a>
+    <a class="tab" href="https://github.com/oneortwo/skillgram">GitHub</a>
+  </nav>
+</header>
+
+<main>
+<div class="pg" id="view-playground">
+  <section class="pane" aria-label="Editor">
+    <div class="pane-head">
+      <span class="pane-title">SKILL.md</span>
+      <select class="ctl" id="example" aria-label="Load an example">
+        <option value="" selected disabled>Load an example</option>
+        <option value="examples/invoice-approval.md">Invoice approval</option>
+        <option value="#broken">Broken on purpose</option>
+        <option value="#minimal">Minimal</option>
+      </select>
+    </div>
+    <div class="editor">
+      <div class="gutter" id="gutter" aria-hidden="true"></div>
+      <textarea id="src" wrap="off" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="Skill source"></textarea>
+    </div>
+    <div class="list">
+      <div class="list-head"><h2>Problems</h2><span class="status" id="status"></span></div>
+      <ul id="problems"></ul>
+    </div>
+  </section>
+  <section class="pane" aria-label="Graph">
+    <div class="pane-head">
+      <span class="pane-title">Graph</span>
+      <div class="seg" role="group" aria-label="Direction">
+        <button type="button" data-dir="TB" aria-pressed="true">Top to bottom</button>
+        <button type="button" data-dir="LR" aria-pressed="false">Left to right</button>
+      </div>
+      <div class="seg"><button type="button" id="desc" aria-pressed="false">Descriptions</button></div>
+    </div>
+    <div class="canvas" id="canvas">
+      <div class="canvas-inner" id="graph"></div>
+      <div class="empty" id="empty" hidden>Add a <code>## Steps</code> section with <code>###</code> steps to see the graph.</div>
+    </div>
+  </section>
+</div>
+
+<div class="pg" id="view-diff" hidden>
+  <section class="pane" aria-label="Versions">
+    <div class="pane-head">
+      <span class="pane-title">Two versions</span>
+      <button class="ctl" type="button" id="swap">Swap</button>
+    </div>
+    <div class="vers">
+      <div class="ver-head"><label for="before">Before</label><span class="status" id="before-status"></span></div>
+      <textarea id="before" wrap="off" spellcheck="false" autocapitalize="off" autocomplete="off"></textarea>
+      <div class="ver-head"><label for="after">After</label><span class="status" id="after-status"></span></div>
+      <textarea id="after" wrap="off" spellcheck="false" autocapitalize="off" autocomplete="off"></textarea>
+    </div>
+  </section>
+  <section class="pane" aria-label="Merged graph">
+    <div class="pane-head">
+      <span class="pane-title">Merged graph</span>
+      <div class="seg" role="group" aria-label="Direction">
+        <button type="button" data-ddir="TB" aria-pressed="true">Top to bottom</button>
+        <button type="button" data-ddir="LR" aria-pressed="false">Left to right</button>
+      </div>
+      <button class="ctl" type="button" id="copy-mermaid">Copy as Mermaid</button>
+    </div>
+    <div class="canvas" id="dcanvas"><div class="canvas-inner" id="dgraph"></div></div>
+    <div class="legend">
+      <span><i class="sw sw-added"></i>Added</span>
+      <span><i class="sw sw-changed"></i>Changed or renamed</span>
+      <span><i class="sw sw-removed"></i>Removed</span>
+    </div>
+    <div class="list">
+      <div class="list-head"><h2>What changed</h2><span class="status" id="dsummary"></span></div>
+      <ul id="changes"></ul>
+    </div>
+  </section>
+</div>
+</main>
+
+<script type="text/plain" id="broken">## Steps
+
+### Collect files
+Gather every file the sender attached.
+
+### Check totals
+After: Collect fles
+Type: gate
+
+Compare the totals with the summary sheet.
+
+### Price
+After: Check totals, Review
+Type: skill
+
+Run the pricing.
+
+### Review
+After: Price
+
+Look over the price.
+
+### Notify sender
+Note: only if totals are off
+
+Email the sender.
+</script>
+<script type="text/plain" id="minimal">## Steps
+
+### Draft reply
+Write a reply to the customer.
+
+### Approve
+After: Draft reply
+Type: human
+
+Wait for a teammate to approve the draft.
+</script>
+
+<script type="module">
+import { parse, diff, toMermaid } from './lib/index.js';
+import { render, STYLES } from './lib/render.js';
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const style = document.createElement('style');
+style.textContent = STYLES;
+document.head.append(style);
+
+const ctx = document.createElement('canvas').getContext('2d');
+const measure = (t, font) => { ctx.font = font; return ctx.measureText(t).width; };
+const store = {
+  get: k => { try { return localStorage.getItem(k); } catch { return null; } },
+  set: (k, v) => { try { localStorage.setItem(k, v); } catch { /* storage unavailable */ } },
+};
+async function loadText(ref) {
+  if (ref.startsWith('#')) return document.getElementById(ref.slice(1)).textContent.replace(/^\n/, '');
+  const res = await fetch(ref);
+  return res.ok ? res.text() : `## Steps\n\n### Could not load ${ref}\nThe example file is missing.\n`;
+}
+function placeGraph(host, canvas, out) {
+  host.innerHTML = out ? out.svg : '';
+  if (!out) return;
+  const svg = host.querySelector('svg');
+  const scale = Math.max(0.3, Math.min(1, (canvas.clientWidth - 32) / out.width));
+  svg.setAttribute('width', Math.round(out.width * scale));
+  svg.setAttribute('height', Math.round(out.height * scale));
+}
+const plural = (n, w) => `${n} ${w}${n === 1 ? '' : 's'}`;
+
+/* Playground */
+const ta = $('#src'), gutter = $('#gutter');
+let model = parse(''), dir = 'TB', desc = false, timer;
+
+function update() {
+  model = parse(ta.value);
+  const by = {};
+  for (const p of model.problems) (by[p.line] ??= []).push(p);
+  const n = ta.value.split('\n').length;
+  let g = '';
+  for (let i = 1; i <= n; i++) {
+    const ps = by[i];
+    const cls = ps ? (ps.some(p => p.severity === 'error') ? 'err' : 'warn') : '';
+    g += `<div class="${cls}"${ps ? ` title="${esc(ps.map(p => p.message).join('\n'))}"` : ''}>${i}</div>`;
+  }
+  gutter.innerHTML = g;
+  gutter.scrollTop = ta.scrollTop;
+
+  const e = model.problems.filter(p => p.severity === 'error').length, w = model.problems.length - e;
+  const st = $('#status');
+  st.className = 'status ' + (e ? 's-err' : w ? 's-warn' : 's-ok');
+  st.textContent = e ? plural(e, 'error') + (w ? ', ' + plural(w, 'warning') : '') : w ? 'Valid, ' + plural(w, 'warning') : 'Valid';
+  $('#problems').innerHTML = model.problems.length
+    ? model.problems.map((p, i) => `<li><button type="button" class="row ${p.severity}" data-i="${i}"><span class="tag">${p.severity === 'error' ? 'Error' : 'Warning'}</span><span class="meta">Line ${p.line} · ${p.code}</span><span class="msg">${esc(p.message)}</span></button></li>`).join('')
+    : '<li class="none">No problems. This skill follows Skillgram 0.1.</li>';
+  drawPlayground();
+  store.set('skillgram-draft', ta.value);
+}
+function drawPlayground() {
+  if ($('#view-playground').hidden) return;
+  const out = render(model, { direction: dir, descriptions: desc, measure, interactive: true, idPrefix: 'pg' });
+  $('#empty').hidden = !!out;
+  placeGraph($('#graph'), $('#canvas'), out);
+}
+function gotoLine(n) {
+  const lines = ta.value.split('\n');
+  let pos = 0;
+  for (let i = 0; i < n - 1 && i < lines.length; i++) pos += lines[i].length + 1;
+  ta.focus({ preventScroll: true });
+  ta.setSelectionRange(pos, pos + (lines[n - 1] ?? '').length);
+  ta.scrollTop = Math.max(0, (n - 1) * 20 - ta.clientHeight / 3);
+  gutter.scrollTop = ta.scrollTop;
+}
+ta.addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(update, 90); });
+ta.addEventListener('scroll', () => { gutter.scrollTop = ta.scrollTop; });
+$('#example').addEventListener('change', async ev => {
+  const ref = ev.target.value;
+  ev.target.value = '';
+  ta.value = await loadText(ref);
+  ta.scrollTop = 0;
+  update();
+});
+$('#problems').addEventListener('click', ev => {
+  const b = ev.target.closest('.row');
+  if (b) gotoLine(model.problems[+b.dataset.i].line);
+});
+$('#problems').addEventListener('mouseover', ev => {
+  const b = ev.target.closest('.row');
+  document.querySelectorAll('#graph .hl').forEach(n => n.classList.remove('hl'));
+  const id = b && model.problems[+b.dataset.i].stepId;
+  if (id) document.querySelector(`#graph [data-id="${id}"]`)?.classList.add('hl');
+});
+const openNode = ev => {
+  const g = ev.target.closest('.node');
+  if (g) gotoLine(+g.dataset.line);
+};
+$('#graph').addEventListener('click', openNode);
+$('#graph').addEventListener('keydown', ev => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); openNode(ev); } });
+document.querySelectorAll('[data-dir]').forEach(b => b.addEventListener('click', () => {
+  dir = b.dataset.dir;
+  document.querySelectorAll('[data-dir]').forEach(x => x.setAttribute('aria-pressed', x === b));
+  drawPlayground();
+}));
+$('#desc').addEventListener('click', () => { desc = !desc; $('#desc').setAttribute('aria-pressed', desc); drawPlayground(); });
+
+/* Diff */
+const before = $('#before'), after = $('#after');
+let dmodel = diff(parse(''), parse('')), ddir = 'TB', dtimer;
+function badge(el, m) {
+  const e = m.problems.filter(p => p.severity === 'error').length;
+  el.className = 'status ' + (e ? 's-err' : 's-ok');
+  el.textContent = e ? plural(e, 'error') : 'Valid';
+}
+function updateDiff() {
+  const A = parse(before.value), B = parse(after.value);
+  dmodel = diff(A, B);
+  badge($('#before-status'), A);
+  badge($('#after-status'), B);
+  const count = k => dmodel.steps.filter(s => s.diff === k || (k === 'changed' && s.diff === 'renamed')).length;
+  const sum = $('#dsummary');
+  sum.className = 'status ' + (dmodel.changes.length ? 's-warn' : 's-ok');
+  sum.textContent = dmodel.changes.length ? `${count('added')} added · ${count('changed')} changed · ${count('removed')} removed` : 'No changes';
+  const label = { added: 'Added', removed: 'Removed', changed: 'Changed', renamed: 'Renamed' };
+  $('#changes').innerHTML = dmodel.changes.length
+    ? dmodel.changes.map((c, i) => `<li><div class="row chg ${c.kind}" data-i="${i}"><span class="tag">${label[c.kind]}</span><span class="msg">${esc(c.message)}</span></div></li>`).join('')
+    : '<li class="none">The two versions have the same steps and edges.</li>';
+  drawDiff();
+}
+function drawDiff() {
+  if ($('#view-diff').hidden) return;
+  placeGraph($('#dgraph'), $('#dcanvas'), render(dmodel, { direction: ddir, measure, idPrefix: 'df' }));
+}
+[before, after].forEach(el => el.addEventListener('input', () => { clearTimeout(dtimer); dtimer = setTimeout(updateDiff, 120); }));
+$('#swap').addEventListener('click', () => { [before.value, after.value] = [after.value, before.value]; updateDiff(); });
+document.querySelectorAll('[data-ddir]').forEach(b => b.addEventListener('click', () => {
+  ddir = b.dataset.ddir;
+  document.querySelectorAll('[data-ddir]').forEach(x => x.setAttribute('aria-pressed', x === b));
+  drawDiff();
+}));
+$('#copy-mermaid').addEventListener('click', () => {
+  const btn = $('#copy-mermaid');
+  const done = m => { btn.textContent = m; setTimeout(() => { btn.textContent = 'Copy as Mermaid'; }, 1400); };
+  navigator.clipboard.writeText(toMermaid(dmodel, { direction: ddir })).then(() => done('Copied'), () => done('Copy failed'));
+});
+$('#changes').addEventListener('mouseover', ev => {
+  const r = ev.target.closest('.row');
+  document.querySelectorAll('#dgraph .hl').forEach(n => n.classList.remove('hl'));
+  if (r) document.querySelector(`#dgraph [data-id="${dmodel.changes[+r.dataset.i].stepId}"]`)?.classList.add('hl');
+});
+
+/* Routing */
+const VIEWS = ['playground', 'diff'];
+function show(v) {
+  if (!VIEWS.includes(v)) v = 'playground';
+  for (const x of VIEWS) {
+    $('#view-' + x).hidden = x !== v;
+    $('#tab-' + x).setAttribute('aria-current', x === v ? 'page' : 'false');
+  }
+  if (location.hash.slice(1) !== v) history.replaceState(null, '', '#' + v);
+  if (v === 'diff') drawDiff(); else drawPlayground();
+}
+document.querySelectorAll('button.tab').forEach(t => t.addEventListener('click', () => show(t.dataset.v)));
+window.addEventListener('hashchange', () => show(location.hash.slice(1)));
+let rt;
+window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => { drawPlayground(); drawDiff(); }, 120); });
+
+ta.value = store.get('skillgram-draft') || await loadText('examples/invoice-approval.md');
+before.value = await loadText('examples/invoice-approval.md');
+after.value = await loadText('examples/invoice-approval-v2.md');
+show(location.hash.slice(1));
+update();
+updateDiff();
+document.fonts?.ready.then(() => { drawPlayground(); drawDiff(); });
+</script>
+</body>
+</html>

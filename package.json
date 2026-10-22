@@ -44,7 +44,8 @@
     "build": "tsc -p tsconfig.json",
     "test": "npm run build && node --test test/*.test.mjs",
     "check": "npm test",
-    "fixtures:snapshot": "npm run build && node scripts/snapshot-fixtures.mjs"
+    "fixtures:snapshot": "npm run build && node scripts/snapshot-fixtures.mjs",
+    "site": "npm run build && rm -rf site/lib site/examples && cp -r dist site/lib && cp -r examples site/examples"
   },
   "dependencies": {
     "@dagrejs/dagre": "^3.1.1"
