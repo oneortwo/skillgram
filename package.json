@@ -1,0 +1,55 @@
+{
+  "name": "skillgram",
+  "version": "0.1.0",
+  "description": "Write agent skills so their steps form a graph. Parser, validator, diff and renderer for Skillgram SKILL.md files.",
+  "license": "MIT",
+  "author": "oneortwo",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/oneortwo/skillgram.git"
+  },
+  "homepage": "https://oneortwo.github.io/skillgram/",
+  "keywords": [
+    "agent-skills",
+    "skill-md",
+    "dag",
+    "workflow",
+    "markdown",
+    "ai-agents"
+  ],
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "files": [
+    "dist",
+    "SPEC.md"
+  ],
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./render": {
+      "types": "./dist/render.d.ts",
+      "default": "./dist/render.js"
+    }
+  },
+  "bin": {
+    "skillgram": "./dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "npm run build && node --test test/",
+    "check": "npm test"
+  },
+  "dependencies": {
+    "@dagrejs/dagre": "^3.1.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.5",
+    "typescript": "^5.9.3"
+  }
+}
