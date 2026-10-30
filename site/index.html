@@ -8,7 +8,7 @@
 <meta name="description" content="Write agent skills so their steps form a graph. A playground for the Skillgram spec: live graph, validator and diff.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400;500&display=swap">
 <script type="importmap">
 { "imports": {
   "@dagrejs/dagre": "https://cdn.jsdelivr.net/npm/@dagrejs/dagre@3.1.1/+esm",
@@ -16,29 +16,20 @@
 } }
 </script>
 <style>
-/* Layout: app bar, then a split workbench (sources | graph). */
+/* Layout: a dark, quiet shell. Home is an editorial landing page; Spec, Playground and Diff are tools under the same top bar. */
 :root {
-  --bg: #f4f6f9; --surface: #ffffff; --sunk: #eaeef4; --fg: #151c27; --muted: #566173;
-  --line: #d6dce5; --line-strong: #8f9bad; --accent: #2443c4; --accent-soft: #e4e9fb; --on-accent: #ffffff;
-  --err: #be3128; --err-soft: #fbe7e5; --warn: #946000; --warn-soft: #fbefd6; --ok: #1c7246; --ok-soft: #dff1e7;
-  --grid-dot: #d3d9e2;
-  --sg-bg: var(--surface); --sg-node: #ffffff; --sg-fg: var(--fg); --sg-muted: var(--muted); --sg-line: var(--line-strong);
-  --sg-gate: #c0821a; --sg-gate-bg: #fdf1dc; --sg-human: #26806e; --sg-human-bg: #e0f2ee;
-  --sg-skill: #2443c4; --sg-skill-bg: #e4e9fb; --sg-err: var(--err); --sg-ok: var(--ok); --sg-warn: var(--warn);
-  --f-display: "Bricolage Grotesque", system-ui, sans-serif;
-  --f-body: "Instrument Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
-  --f-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
-}
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #0e1218; --surface: #151a23; --sunk: #0a0d12; --fg: #e5e9f0; --muted: #96a1b2;
-    --line: #262f3e; --line-strong: #56637a; --accent: #8aa4ff; --accent-soft: #1b2546; --on-accent: #0e1218;
-    --err: #ff6f62; --err-soft: #3a1b19; --warn: #f0b44c; --warn-soft: #33270f; --ok: #52c98d; --ok-soft: #11301f;
-    --grid-dot: #222a37;
-    --sg-node: #1a2029; --sg-gate: #d9a044; --sg-gate-bg: #2f2513; --sg-human: #4fc0ab; --sg-human-bg: #10302a;
-    --sg-skill: #8aa4ff; --sg-skill-bg: #1b2546;
-    color-scheme: dark;
-  }
+  --bg: #0b0c0e; --surface: #131417; --raised: #17181c; --sunk: #0f1013; --fg: #ededef; --muted: #8b9099; --dim: #5c616b;
+  --line: #222429; --line-strong: #3a3e46; --accent: #9db2ff; --accent-soft: #1c2133; --on-accent: #0b0c0e;
+  --pill: #f2f2f3; --on-pill: #0b0c0e;
+  --err: #ff7a6e; --err-soft: #2c1614; --warn: #f2b850; --warn-soft: #2a2110; --ok: #5fd39a; --ok-soft: #10261a;
+  --grid-dot: #1d1f24;
+  --sg-bg: var(--surface); --sg-node: #17181c; --sg-fg: var(--fg); --sg-muted: var(--muted); --sg-line: #4a4f59;
+  --sg-gate: #e0a84a; --sg-gate-bg: #2a2213; --sg-human: #5cc8b4; --sg-human-bg: #0f2622;
+  --sg-skill: #9db2ff; --sg-skill-bg: #1a2036; --sg-err: var(--err); --sg-ok: var(--ok); --sg-warn: var(--warn);
+  --f-display: "Geist", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-body: "Geist", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  color-scheme: dark;
 }
 * { box-sizing: border-box; }
 html, body { height: 100%; margin: 0; }
@@ -49,18 +40,19 @@ a { color: var(--accent); }
 code { font-family: var(--f-mono); font-size: 0.88em; }
 [hidden] { display: none !important; }
 
-.bar {
-  flex: none; display: flex; align-items: center; flex-wrap: wrap; gap: 8px 20px;
-  padding: 10px max(16px, env(safe-area-inset-right)) 10px max(16px, env(safe-area-inset-left));
-  background: var(--surface); border-bottom: 1px solid var(--line);
-}
-.brand { display: flex; align-items: center; gap: 10px; }
-.brand b { font-family: var(--f-display); font-weight: 700; font-size: 20px; letter-spacing: -0.01em; }
-.tagline { color: var(--muted); font-size: 14px; }
-.nav { display: flex; gap: 4px; margin-left: auto; align-items: center; }
-.tab { border: 0; background: none; cursor: pointer; padding: 6px 12px; border-radius: 7px; color: var(--muted); font-weight: 500; text-decoration: none; }
-.tab:hover { color: var(--fg); background: var(--sunk); }
-.tab[aria-current="page"] { color: var(--fg); background: var(--accent-soft); }
+.topbar { flex: none; padding: 0 max(20px, env(safe-area-inset-right)) 0 max(20px, env(safe-area-inset-left)); background: var(--bg); }
+.topbar-inner { max-width: 1240px; margin: 0 auto; height: 68px; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 16px; border-bottom: 1px solid var(--line); }
+.brand { display: flex; align-items: center; gap: 10px; border: 0; background: none; padding: 0; cursor: pointer; color: var(--fg); justify-self: start; }
+.brand b { font: 500 17px var(--f-display); letter-spacing: -0.01em; }
+.nav { display: flex; gap: 28px; align-items: center; }
+.tab { border: 0; background: none; cursor: pointer; padding: 6px 0; color: var(--muted); font-size: 14.5px; text-decoration: none; }
+.tab:hover { color: var(--fg); }
+.tab[aria-current="page"] { color: var(--fg); }
+.top-actions { justify-self: end; display: flex; align-items: center; gap: 22px; }
+.top-actions a { color: var(--fg); text-decoration: none; font-size: 14.5px; }
+.pill { border: 0; border-radius: 999px; background: var(--pill); color: var(--on-pill); font: 500 14.5px var(--f-body); padding: 9px 16px; cursor: pointer; text-decoration: none; white-space: nowrap; }
+.pill:hover { background: #ffffff; }
+.pill.big { font-size: 16.5px; padding: 15px 26px; }
 
 main { flex: 1; min-height: 0; display: flex; flex-direction: column; }
 .pg {
@@ -70,7 +62,7 @@ main { flex: 1; min-height: 0; display: flex; flex-direction: column; }
 .pane { display: flex; flex-direction: column; min-height: 0; min-width: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
 .pane-head { flex: none; display: flex; align-items: center; flex-wrap: wrap; gap: 8px; padding: 8px 10px 8px 14px; border-bottom: 1px solid var(--line); }
 .pane-title { font-family: var(--f-mono); font-size: 12px; color: var(--muted); margin-right: auto; }
-.ctl { border: 1px solid var(--line); background: var(--surface); border-radius: 7px; padding: 4px 10px; font-size: 13px; cursor: pointer; }
+.ctl { border: 1px solid var(--line); background: var(--raised); border-radius: 7px; padding: 4px 10px; font-size: 13px; cursor: pointer; }
 .ctl:hover { border-color: var(--line-strong); }
 .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 7px; overflow: hidden; }
 .seg button { border: 0; background: none; padding: 4px 10px; font-size: 13px; cursor: pointer; color: var(--muted); }
@@ -128,8 +120,81 @@ textarea {
 .sw { display: inline-block; width: 18px; height: 10px; border-radius: 3px; border: 2px solid; vertical-align: -1px; margin-right: 6px; }
 .sw-added { border-color: var(--ok); } .sw-changed { border-color: var(--warn); } .sw-removed { border-color: var(--err); border-style: dashed; }
 
+/* Home */
+.home { max-width: 1240px; margin: 0 auto; padding-bottom: 72px; }
+.hero { position: relative; padding: 104px 0 56px; }
+.hero-mark { position: absolute; right: 0; top: 40px; width: min(300px, 26vw); height: auto; opacity: .08; pointer-events: none; }
+.hero h1 { position: relative; font: 400 clamp(42px, 6.4vw, 86px)/1.02 var(--f-display); letter-spacing: -.05em; margin: 0; }
+.hero h1 span, .split h2 span { color: var(--muted); }
+.lede { font-size: clamp(17px, 1.6vw, 20px); line-height: 1.5; color: var(--muted); max-width: 34rem; margin: 30px 0 34px; }
+.lede b { color: var(--fg); font-weight: 400; }
+.cta { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+.or { color: var(--muted); font-size: 15px; }
+.install { max-width: 44rem; margin-top: 20px; display: grid; gap: 10px; }
+.install-tabs { display: flex; gap: 6px; }
+.install-tabs button { border: 1px solid transparent; background: none; color: var(--muted); border-radius: 7px; padding: 4px 10px; font-size: 13.5px; cursor: pointer; }
+.install-tabs button[aria-selected="true"] { border-color: var(--line-strong); color: var(--fg); background: var(--raised); }
+.cmd { display: flex; align-items: center; justify-content: space-between; gap: 12px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 14px 14px 18px; font: 14px var(--f-mono); overflow-x: auto; }
+.cmd code { font-size: 14px; white-space: nowrap; }
+.dollar { color: var(--dim); }
+.copy { border: 1px solid var(--line-strong); background: var(--raised); color: var(--fg); border-radius: 8px; padding: 5px 12px; font-size: 13px; cursor: pointer; }
+.small { color: var(--dim); font-size: 13.5px; margin: 2px 0 0; }
+.arrow-link { color: var(--fg); font-size: 14.5px; border: 0; background: none; padding: 0; cursor: pointer; text-decoration: underline; text-decoration-color: var(--line-strong); text-underline-offset: 4px; justify-self: start; }
+.showcase { margin-top: 28px; }
+.looks { display: flex; justify-content: flex-end; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+.looks > span { color: var(--muted); font-size: 14px; margin-right: 6px; }
+.look { border: 1px solid var(--line); background: none; color: var(--fg); border-radius: 8px; padding: 6px 12px; font-size: 14px; cursor: pointer; display: inline-flex; gap: 10px; align-items: baseline; }
+.look i { font-style: normal; font: 12px var(--f-mono); color: var(--dim); }
+.look[aria-pressed="true"] { background: var(--raised); border-color: var(--line-strong); }
+.window { border: 1px solid var(--line); border-radius: 14px; overflow: hidden; background: var(--sunk); box-shadow: 0 30px 80px rgb(0 0 0 / .45); }
+.win-bar { height: 40px; display: flex; align-items: center; gap: 8px; padding: 0 14px; border-bottom: 1px solid var(--line); background: var(--surface); }
+.win-bar i { width: 12px; height: 12px; border-radius: 50%; background: #ff5f57; }
+.win-bar i:nth-child(2) { background: #febc2e; } .win-bar i:nth-child(3) { background: #28c840; }
+.win-title { flex: 1; text-align: center; font: 12px var(--f-mono); color: var(--muted); margin-right: 52px; }
+.win-body { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); height: 580px; }
+.win-left { overflow: auto; border-right: 1px solid var(--line); min-width: 0; }
+.win-right { overflow: auto; min-width: 0; background-image: radial-gradient(var(--grid-dot) 1px, transparent 1.2px); background-size: 18px 18px; display: flex; justify-content: center; align-items: flex-start; padding: 18px; }
+.win-right svg { display: block; max-width: none; }
+.src { margin: 0; padding: 16px 18px; font: 12.5px/1.65 var(--f-mono); color: #b9bdc5; white-space: pre; }
+.src .h { color: var(--fg); font-weight: 500; } .src .k { color: var(--sg-gate); } .src .fm { color: var(--dim); }
+.term { margin: 0; padding: 18px 20px; font: 13px/1.7 var(--f-mono); color: #c9ccd2; white-space: pre-wrap; width: 100%; align-self: stretch; background: var(--sunk); }
+.term .p { color: var(--dim); } .term .e { color: var(--err); } .term .w { color: var(--warn); } .term .s { color: var(--muted); }
+.changes { list-style: none; margin: 0; padding: 14px; display: grid; gap: 8px; font-size: 14px; }
+.changes li { display: grid; grid-template-columns: auto 1fr; gap: 10px; align-items: baseline; color: #c9ccd2; }
+.changes b { font: 500 11px var(--f-mono); border-radius: 4px; padding: 1px 6px; }
+.changes .added b { background: var(--ok-soft); color: var(--ok); } .changes .removed b { background: var(--err-soft); color: var(--err); }
+.changes .changed b, .changes .renamed b { background: var(--warn-soft); color: var(--warn); }
+.statement { padding: 128px 0; border-bottom: 1px solid var(--line); }
+.statement p { font: 400 clamp(28px, 3.6vw, 46px)/1.16 var(--f-display); letter-spacing: -.035em; margin: 0; max-width: 23em; }
+.statement span { color: var(--muted); }
+.split { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 48px; align-items: end; padding: 104px 0 32px; }
+.split h2 { font: 400 clamp(36px, 4.8vw, 62px)/1.02 var(--f-display); letter-spacing: -.045em; margin: 0; }
+.split p { color: var(--muted); font-size: 17px; line-height: 1.55; margin: 0; max-width: 30rem; }
+.split .arrow-link { margin-top: 14px; display: inline-block; }
+.frame { border: 1px solid var(--line); border-radius: 14px; overflow: hidden; background: var(--sunk); }
+.frame .term { max-height: 360px; overflow: auto; }
+.home-foot { margin-top: 112px; padding: 28px 0 0; border-top: 1px solid var(--line); display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; color: var(--dim); font-size: 13.5px; }
+.home-foot a, .home-foot button { color: var(--muted); text-decoration: none; background: none; border: 0; padding: 0; font: inherit; cursor: pointer; }
+.home-foot nav { display: flex; gap: 20px; }
+@media (max-width: 900px) {
+  .hero h1 br, .split h2 br { display: none; }
+  .hero { padding-top: 64px; }
+  .hero-mark { display: none; }
+  .win-body { grid-template-columns: minmax(0, 1fr); height: auto; }
+  .win-left { max-height: 300px; border-right: 0; border-bottom: 1px solid var(--line); }
+  .win-right { min-height: 420px; }
+  .split { grid-template-columns: minmax(0, 1fr); gap: 18px; padding-top: 72px; }
+  .statement { padding: 80px 0; }
+  .looks { justify-content: flex-start; }
+}
+@media (max-width: 640px) {
+  .topbar-inner { grid-template-columns: auto 1fr; }
+  .nav { justify-self: end; gap: 18px; }
+  .top-actions { display: none; }
+}
+
 /* Visual editor */
-.ctl.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.ctl.primary { background: var(--pill); border-color: var(--pill); color: var(--on-pill); border-radius: 999px; padding: 4px 12px; }
 .ctl.primary:hover { filter: brightness(1.08); }
 .ctl.danger { color: var(--err); }
 .ctl:disabled { opacity: .45; cursor: default; }
@@ -150,7 +215,7 @@ textarea {
 }
 .drawer form { display: flex; flex-direction: column; min-height: 0; height: 100%; }
 .drawer-head { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; border-bottom: 1px solid var(--line); }
-.drawer-head h2 { font: 700 17px var(--f-display); margin: 0; }
+.drawer-head h2 { font: 500 17px var(--f-display); margin: 0; }
 .x { border: 0; background: none; font-size: 22px; line-height: 1; cursor: pointer; color: var(--muted); padding: 2px 6px; border-radius: 6px; }
 .x:hover { background: var(--sunk); color: var(--fg); }
 .drawer-body { flex: 1; min-height: 0; overflow: auto; padding: 14px; display: grid; gap: 14px; align-content: start; }
@@ -189,8 +254,9 @@ textarea {
 .toc a { display: block; padding: 3px 8px; border-radius: 6px; color: var(--muted); text-decoration: none; }
 .toc a:hover { background: var(--sunk); color: var(--fg); }
 .spec { min-width: 0; max-width: 46rem; }
-.spec h1 { font-family: var(--f-display); font-size: clamp(36px, 6vw, 52px); line-height: 1.05; letter-spacing: -.03em; margin: 0 0 12px; }
-.spec h2 { font-family: var(--f-display); font-size: 24px; letter-spacing: -.015em; margin: 44px 0 12px; scroll-margin-top: 16px; }
+.spec h1 { font: 400 clamp(40px, 6vw, 64px)/1.02 var(--f-display); letter-spacing: -.045em; margin: 0 0 16px; }
+.spec h2 { font: 400 28px/1.15 var(--f-display); letter-spacing: -.03em; margin: 52px 0 12px; scroll-margin-top: 16px; }
+.spec p, .spec li { color: #c9ccd2; }
 .spec h3 { font-size: 16px; margin: 28px 0 8px; scroll-margin-top: 16px; }
 .spec p, .spec li { max-width: 42rem; }
 .spec code { background: var(--sunk); border-radius: 4px; padding: 1px 4px; }
@@ -208,7 +274,7 @@ textarea {
 .live-bar { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 8px 10px; border-top: 1px solid var(--line); font-size: 12.5px; color: var(--muted); }
 .try { border: 1px solid var(--line); background: var(--surface); border-radius: 6px; padding: 2px 8px; font-size: 12px; cursor: pointer; white-space: nowrap; }
 .try:hover { border-color: var(--line-strong); }
-.try.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.try.primary { background: var(--pill); border-color: var(--pill); color: var(--on-pill); border-radius: 999px; padding: 3px 10px; }
 .spec .wide { max-width: none; }
 
 @media (max-width: 900px) {
@@ -226,17 +292,104 @@ textarea {
 </style>
 </head>
 <body>
-<header class="bar">
-  <div class="brand"><b>Skillgram</b><span class="tagline">Write agent skills so their steps form a graph.</span></div>
-  <nav class="nav" aria-label="Pages">
-    <button class="tab" type="button" data-v="spec" id="tab-spec">Spec</button>
-    <button class="tab" type="button" data-v="playground" id="tab-playground">Playground</button>
-    <button class="tab" type="button" data-v="diff" id="tab-diff">Diff</button>
-    <a class="tab" href="https://github.com/oneortwo/skillgram">GitHub</a>
-  </nav>
+<header class="topbar">
+  <div class="topbar-inner">
+    <button class="brand" type="button" data-go="home" aria-label="Skillgram home">
+      <svg width="24" height="24" viewBox="0 0 26 26" aria-hidden="true"><rect x="8" y="2" width="10" height="6" rx="2" fill="none" stroke="#ededef" stroke-width="1.8"/><rect x="2" y="18" width="9" height="6" rx="2" fill="none" stroke="#ededef" stroke-width="1.8"/><rect x="15" y="18" width="9" height="6" rx="3" fill="none" stroke="#ededef" stroke-width="1.8"/><path d="M13 8v4M13 12l-6 6M13 12l6 6" stroke="#8b9099" stroke-width="1.8" fill="none"/></svg>
+      <b>Skillgram</b>
+    </button>
+    <nav class="nav" aria-label="Pages">
+      <button class="tab" type="button" data-v="home" id="tab-home" hidden>Home</button>
+      <button class="tab" type="button" data-v="spec" id="tab-spec">Spec</button>
+      <button class="tab" type="button" data-v="playground" id="tab-playground">Playground</button>
+      <button class="tab" type="button" data-v="diff" id="tab-diff">Diff</button>
+    </nav>
+    <div class="top-actions">
+      <a href="https://github.com/oneortwo/skillgram">GitHub</a>
+      <button class="pill" type="button" data-go="playground">Try it</button>
+    </div>
+  </div>
 </header>
 
 <main>
+<div class="doc" id="view-home" hidden>
+  <div class="home">
+    <section class="hero">
+      <svg class="hero-mark" viewBox="0 0 200 220" aria-hidden="true" fill="none" stroke="#ededef" stroke-width="5">
+        <rect x="60" y="6" width="80" height="40" rx="10"/>
+        <polygon points="70,90 130,90 146,110 130,130 70,130 54,110"/>
+        <rect x="6" y="172" width="78" height="40" rx="20"/>
+        <rect x="116" y="172" width="78" height="40" rx="4"/><path d="M126 172v40M184 172v40"/>
+        <path d="M100 46v44M86 130l-40 42M114 130l40 42"/>
+      </svg>
+      <h1>Skills your agents follow.<br><span>Graphs your team can read.</span></h1>
+      <p class="lede">A few rules on top of SKILL.md that turn an agent's steps into a graph. The file stays plain Markdown. <b>Tools check it, draw it and diff it.</b></p>
+      <div class="cta">
+        <button class="pill big" type="button" data-go="playground">Open the playground</button>
+        <span class="or">or install the package:</span>
+      </div>
+      <div class="install">
+        <div class="install-tabs" role="tablist" aria-label="Install">
+          <button type="button" role="tab" aria-selected="true" data-cmd="npm install skillgram">npm</button>
+          <button type="button" role="tab" aria-selected="false" data-cmd="npx skillgram lint skills/*/SKILL.md">CLI</button>
+          <button type="button" role="tab" aria-selected="false" data-cmd="npx skillgram diff old.md new.md --mermaid">Diff</button>
+        </div>
+        <div class="cmd"><code><span class="dollar">$</span> <span id="cmd-text">npm install skillgram</span></code><button type="button" class="copy" id="copy-cmd">Copy</button></div>
+        <p class="small">MIT licensed. Works with any agent that reads SKILL.md.</p>
+        <button type="button" class="arrow-link" data-go="spec">Read the spec →</button>
+      </div>
+    </section>
+
+    <section class="showcase" aria-label="Live demo">
+      <div class="looks" role="group" aria-label="Views">
+        <span>Same skill. Another look:</span>
+        <button type="button" class="look" data-look="graph" aria-pressed="true">Graph <i>1</i></button>
+        <button type="button" class="look" data-look="diff" aria-pressed="false">Diff <i>2</i></button>
+        <button type="button" class="look" data-look="mermaid" aria-pressed="false">Mermaid <i>3</i></button>
+        <button type="button" class="look" data-look="lint" aria-pressed="false">Lint <i>4</i></button>
+      </div>
+      <div class="window">
+        <div class="win-bar"><i></i><i></i><i></i><span class="win-title" id="win-title">invoice-approval/SKILL.md</span></div>
+        <div class="win-body"><div class="win-left" id="win-left"></div><div class="win-right" id="win-right"></div></div>
+      </div>
+    </section>
+
+    <section class="statement">
+      <p>A new kind of skill file. <span>Plain Markdown your agents already follow, with just enough structure for tools to check it, draw it and compare versions. Nothing new for the agent to learn, and no diagram to keep in sync.</span></p>
+    </section>
+
+    <section class="split">
+      <h2>Change a skill.<br><span>See what moved.</span></h2>
+      <div>
+        <p>Compare two versions and get one merged graph: added, changed, renamed and removed steps. Paste the Mermaid into a pull request, and reviewers see the flow instead of forty lines of prose.</p>
+        <button type="button" class="arrow-link" data-go="diff">Open the diff view →</button>
+      </div>
+    </section>
+
+    <section class="split">
+      <h2>Break a rule.<br><span>Hear why.</span></h2>
+      <div>
+        <p>29 checks, each with a fixed code and line number. Typos get a "did you mean". Loops, dead branches and missing outcomes fail in CI, before an agent ever runs them.</p>
+        <button type="button" class="arrow-link" data-go="spec">See every rule →</button>
+      </div>
+    </section>
+    <div class="frame"><pre class="term" id="home-lint"></pre></div>
+
+    <section class="split">
+      <h2>Edit it like a diagram.<br><span>Keep it as text.</span></h2>
+      <div>
+        <p>Hover a step in the playground and press + to add the next one. Pick a type, write the instructions, choose what it waits for. Every edit is written back to the Markdown.</p>
+        <button type="button" class="arrow-link" data-go="playground">Try the editor →</button>
+      </div>
+    </section>
+
+    <footer class="home-foot">
+      <span>Skillgram 0.1 · MIT</span>
+      <nav><button type="button" data-go="spec">Spec</button><button type="button" data-go="playground">Playground</button><a href="https://github.com/oneortwo/skillgram">GitHub</a></nav>
+    </footer>
+  </div>
+</div>
+
 <div class="doc" id="view-spec" hidden>
   <div class="doc-inner">
     <nav class="toc" aria-label="Sections"><p class="toc-title">On this page</p><ol id="toc"></ol></nav>
@@ -800,10 +953,89 @@ function drawSpec() {
   specReady.then(() => document.querySelectorAll('.live').forEach(w => w._draw?.()));
 }
 
+/* Home */
+const sources = {};
+function highlight(src) {
+  let fm = src.startsWith('---');
+  return src.split('\n').map((l, i) => {
+    if (fm) { if (i > 0 && l.trim() === '---') fm = false; return `<span class="fm">${esc(l)}</span>`; }
+    if (/^#{1,6}\s/.test(l)) return `<span class="h">${esc(l)}</span>`;
+    const m = l.match(/^(After|Type|Outcomes|Skill|Until|Join):(.*)$/);
+    return m ? `<span class="k">${m[1]}:</span>${esc(m[2])}` : esc(l);
+  }).join('\n');
+}
+function lintOutput(src, file) {
+  const ps = parse(src).problems;
+  const e = ps.filter(p => p.severity === 'error').length;
+  const lines = [`<span class="p">$</span> npx skillgram lint ${file}`];
+  for (const p of ps) lines.push(`${file}:${p.line}: <span class="${p.severity === 'error' ? 'e' : 'w'}">${p.severity} ${p.code}</span> ${esc(p.message)}`);
+  lines.push(`<span class="s">1 file, ${plural(e, 'error')}, ${plural(ps.length - e, 'warning')}</span>`);
+  return lines.join('\n');
+}
+function fitInto(host, out) {
+  host.innerHTML = out ? out.svg : '';
+  if (!out) return;
+  const svg = host.querySelector('svg');
+  const fitH = host.clientHeight > 200 ? (host.clientHeight - 36) / out.height : 1;
+  const scale = Math.max(0.35, Math.min(1, (host.clientWidth - 36) / out.width, fitH));
+  svg.setAttribute('width', Math.round(out.width * scale));
+  svg.setAttribute('height', Math.round(out.height * scale));
+}
+let look = 'graph';
+function drawHome() {
+  if ($('#view-home').hidden || !sources.v1) return;
+  const left = $('#win-left'), right = $('#win-right');
+  right.style.padding = '';
+  if (look === 'graph') {
+    $('#win-title').textContent = 'invoice-approval/SKILL.md';
+    left.innerHTML = `<pre class="src">${highlight(sources.v1)}</pre>`;
+    fitInto(right, render(parse(sources.v1), { measure, idPrefix: 'hg' }));
+  } else if (look === 'diff') {
+    $('#win-title').textContent = 'invoice-approval/SKILL.md — v1 → v2';
+    const d = diff(parse(sources.v1), parse(sources.v2));
+    left.innerHTML = `<ul class="changes">${d.changes.map(c => `<li class="${c.kind}"><b>${c.kind}</b><span>${esc(c.message)}</span></li>`).join('')}</ul>`;
+    fitInto(right, render(d, { measure, idPrefix: 'hd' }));
+  } else if (look === 'mermaid') {
+    $('#win-title').textContent = 'skillgram mermaid SKILL.md';
+    left.innerHTML = `<pre class="src">${highlight(sources.v1)}</pre>`;
+    right.style.padding = '0';
+    right.innerHTML = `<pre class="term">${esc(toMermaid(parse(sources.v1)))}</pre>`;
+  } else {
+    $('#win-title').textContent = 'broken/SKILL.md';
+    left.innerHTML = `<pre class="src">${highlight(sources.broken)}</pre>`;
+    right.style.padding = '0';
+    right.innerHTML = `<pre class="term">${lintOutput(sources.broken, 'SKILL.md')}</pre>`;
+  }
+}
+function setLook(v) {
+  look = v;
+  document.querySelectorAll('.look').forEach(b => b.setAttribute('aria-pressed', b.dataset.look === v));
+  drawHome();
+}
+document.querySelectorAll('.look').forEach(b => b.addEventListener('click', () => setLook(b.dataset.look)));
+document.addEventListener('keydown', ev => {
+  if ($('#view-home').hidden || ev.metaKey || ev.ctrlKey || ev.altKey || /INPUT|TEXTAREA|SELECT/.test(ev.target.tagName)) return;
+  const v = ['graph', 'diff', 'mermaid', 'lint'][Number(ev.key) - 1];
+  if (v) setLook(v);
+});
+document.querySelectorAll('.install-tabs button').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('.install-tabs button').forEach(x => x.setAttribute('aria-selected', x === b));
+  $('#cmd-text').textContent = b.dataset.cmd;
+}));
+$('#copy-cmd').addEventListener('click', () => {
+  const btn = $('#copy-cmd');
+  const done = m => { btn.textContent = m; setTimeout(() => { btn.textContent = 'Copy'; }, 1400); };
+  navigator.clipboard.writeText($('#cmd-text').textContent).then(() => done('Copied'), () => done('Copy failed'));
+});
+document.addEventListener('click', ev => {
+  const go = ev.target.closest('[data-go]');
+  if (go) { show(go.dataset.go); document.querySelector('main > :not([hidden])')?.scrollTo?.(0, 0); }
+});
+
 /* Routing */
-const VIEWS = ['spec', 'playground', 'diff'];
+const VIEWS = ['home', 'spec', 'playground', 'diff'];
 function show(v) {
-  if (!VIEWS.includes(v)) v = 'spec';
+  if (!VIEWS.includes(v)) v = 'home';
   for (const x of VIEWS) {
     $('#view-' + x).hidden = x !== v;
     $('#tab-' + x).setAttribute('aria-current', x === v ? 'page' : 'false');
@@ -811,20 +1043,23 @@ function show(v) {
   if (location.hash.slice(1) !== v) history.replaceState(null, '', '#' + v);
   if (v === 'diff') drawDiff();
   else if (v === 'spec') drawSpec();
+  else if (v === 'home') drawHome();
   else drawPlayground();
 }
 document.querySelectorAll('button.tab').forEach(t => t.addEventListener('click', () => show(t.dataset.v)));
 window.addEventListener('hashchange', () => show(location.hash.slice(1)));
 let rt;
-window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => { drawPlayground(); drawDiff(); drawSpec(); }, 120); });
+window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => { drawPlayground(); drawDiff(); drawSpec(); drawHome(); }, 120); });
 
 ta.value = store.get('skillgram-draft') || await loadText('examples/invoice-approval.md');
-before.value = await loadText('examples/invoice-approval.md');
-after.value = await loadText('examples/invoice-approval-v2.md');
+before.value = sources.v1 = await loadText('examples/invoice-approval.md');
+after.value = sources.v2 = await loadText('examples/invoice-approval-v2.md');
+sources.broken = await loadText('#broken');
+$('#home-lint').innerHTML = lintOutput(sources.broken, 'skills/intake/SKILL.md');
 show(location.hash.slice(1));
 update();
 updateDiff();
-document.fonts?.ready.then(() => { drawPlayground(); drawDiff(); drawSpec(); });
+document.fonts?.ready.then(() => { drawPlayground(); drawDiff(); drawSpec(); drawHome(); });
 </script>
 </body>
 </html>
