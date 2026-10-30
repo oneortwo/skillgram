@@ -16,20 +16,20 @@
 } }
 </script>
 <style>
-/* Layout: a dark, quiet shell. Home is an editorial landing page; Spec, Playground and Diff are tools under the same top bar. */
+/* Layout: a light, quiet shell. Home is an editorial landing page; Spec, Playground and Diff are tools under the same top bar. */
 :root {
-  --bg: #0b0c0e; --surface: #131417; --raised: #17181c; --sunk: #0f1013; --fg: #ededef; --muted: #8b9099; --dim: #5c616b;
-  --line: #222429; --line-strong: #3a3e46; --accent: #9db2ff; --accent-soft: #1c2133; --on-accent: #0b0c0e;
-  --pill: #f2f2f3; --on-pill: #0b0c0e;
-  --err: #ff7a6e; --err-soft: #2c1614; --warn: #f2b850; --warn-soft: #2a2110; --ok: #5fd39a; --ok-soft: #10261a;
-  --grid-dot: #1d1f24;
-  --sg-bg: var(--surface); --sg-node: #17181c; --sg-fg: var(--fg); --sg-muted: var(--muted); --sg-line: #4a4f59;
-  --sg-gate: #e0a84a; --sg-gate-bg: #2a2213; --sg-human: #5cc8b4; --sg-human-bg: #0f2622;
-  --sg-skill: #9db2ff; --sg-skill-bg: #1a2036; --sg-err: var(--err); --sg-ok: var(--ok); --sg-warn: var(--warn);
+  --bg: #ffffff; --surface: #ffffff; --raised: #f6f7f9; --sunk: #f7f8fa; --fg: #111318; --muted: #5d6470; --dim: #8d939d;
+  --line: #e6e8ec; --line-strong: #cdd1d8; --accent: #2f4fd8; --accent-soft: #eef1fd; --on-accent: #ffffff;
+  --pill: #111318; --on-pill: #ffffff;
+  --err: #c8372d; --err-soft: #fdeeec; --warn: #a96a06; --warn-soft: #fdf4e3; --ok: #1d8a55; --ok-soft: #e8f6ee;
+  --grid-dot: #e4e6ea;
+  --sg-bg: var(--surface); --sg-node: #ffffff; --sg-fg: var(--fg); --sg-muted: var(--muted); --sg-line: #9aa1ad;
+  --sg-gate: #c0821a; --sg-gate-bg: #fdf1dc; --sg-human: #26806e; --sg-human-bg: #e0f2ee;
+  --sg-skill: #2443c4; --sg-skill-bg: #e4e9fb; --sg-err: var(--err); --sg-ok: var(--ok); --sg-warn: var(--warn);
   --f-display: "Geist", system-ui, -apple-system, "Segoe UI", sans-serif;
   --f-body: "Geist", system-ui, -apple-system, "Segoe UI", sans-serif;
   --f-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
-  color-scheme: dark;
+  color-scheme: light;
 }
 * { box-sizing: border-box; }
 html, body { height: 100%; margin: 0; }
@@ -51,7 +51,7 @@ code { font-family: var(--f-mono); font-size: 0.88em; }
 .top-actions { justify-self: end; display: flex; align-items: center; gap: 22px; }
 .top-actions a { color: var(--fg); text-decoration: none; font-size: 14.5px; }
 .pill { border: 0; border-radius: 999px; background: var(--pill); color: var(--on-pill); font: 500 14.5px var(--f-body); padding: 9px 16px; cursor: pointer; text-decoration: none; white-space: nowrap; }
-.pill:hover { background: #ffffff; }
+.pill:hover { background: #2a2d35; }
 .pill.big { font-size: 16.5px; padding: 15px 26px; }
 
 main { flex: 1; min-height: 0; display: flex; flex-direction: column; }
@@ -146,7 +146,7 @@ textarea {
 .look { border: 1px solid var(--line); background: none; color: var(--fg); border-radius: 8px; padding: 6px 12px; font-size: 14px; cursor: pointer; display: inline-flex; gap: 10px; align-items: baseline; }
 .look i { font-style: normal; font: 12px var(--f-mono); color: var(--dim); }
 .look[aria-pressed="true"] { background: var(--raised); border-color: var(--line-strong); }
-.window { border: 1px solid var(--line); border-radius: 14px; overflow: hidden; background: var(--sunk); box-shadow: 0 30px 80px rgb(0 0 0 / .45); }
+.window { border: 1px solid var(--line); border-radius: 14px; overflow: hidden; background: var(--sunk); box-shadow: 0 24px 60px rgb(17 19 24 / .10); }
 .win-bar { height: 40px; display: flex; align-items: center; gap: 8px; padding: 0 14px; border-bottom: 1px solid var(--line); background: var(--surface); }
 .win-bar i { width: 12px; height: 12px; border-radius: 50%; background: #ff5f57; }
 .win-bar i:nth-child(2) { background: #febc2e; } .win-bar i:nth-child(3) { background: #28c840; }
@@ -155,12 +155,12 @@ textarea {
 .win-left { overflow: auto; border-right: 1px solid var(--line); min-width: 0; }
 .win-right { overflow: auto; min-width: 0; background-image: radial-gradient(var(--grid-dot) 1px, transparent 1.2px); background-size: 18px 18px; display: flex; justify-content: center; align-items: flex-start; padding: 18px; }
 .win-right svg { display: block; max-width: none; }
-.src { margin: 0; padding: 16px 18px; font: 12.5px/1.65 var(--f-mono); color: #b9bdc5; white-space: pre; }
+.src { margin: 0; padding: 16px 18px; font: 12.5px/1.65 var(--f-mono); color: var(--muted); white-space: pre; }
 .src .h { color: var(--fg); font-weight: 500; } .src .k { color: var(--sg-gate); } .src .fm { color: var(--dim); }
-.term { margin: 0; padding: 18px 20px; font: 13px/1.7 var(--f-mono); color: #c9ccd2; white-space: pre-wrap; width: 100%; align-self: stretch; background: var(--sunk); }
+.term { margin: 0; padding: 18px 20px; font: 13px/1.7 var(--f-mono); color: var(--fg); white-space: pre-wrap; width: 100%; align-self: stretch; background: var(--sunk); }
 .term .p { color: var(--dim); } .term .e { color: var(--err); } .term .w { color: var(--warn); } .term .s { color: var(--muted); }
 .changes { list-style: none; margin: 0; padding: 14px; display: grid; gap: 8px; font-size: 14px; }
-.changes li { display: grid; grid-template-columns: auto 1fr; gap: 10px; align-items: baseline; color: #c9ccd2; }
+.changes li { display: grid; grid-template-columns: auto 1fr; gap: 10px; align-items: baseline; color: var(--fg); }
 .changes b { font: 500 11px var(--f-mono); border-radius: 4px; padding: 1px 6px; }
 .changes .added b { background: var(--ok-soft); color: var(--ok); } .changes .removed b { background: var(--err-soft); color: var(--err); }
 .changes .changed b, .changes .renamed b { background: var(--warn-soft); color: var(--warn); }
@@ -256,7 +256,7 @@ textarea {
 .spec { min-width: 0; max-width: 46rem; }
 .spec h1 { font: 400 clamp(40px, 6vw, 64px)/1.02 var(--f-display); letter-spacing: -.045em; margin: 0 0 16px; }
 .spec h2 { font: 400 28px/1.15 var(--f-display); letter-spacing: -.03em; margin: 52px 0 12px; scroll-margin-top: 16px; }
-.spec p, .spec li { color: #c9ccd2; }
+.spec p, .spec li { color: #2b2f37; }
 .spec h3 { font-size: 16px; margin: 28px 0 8px; scroll-margin-top: 16px; }
 .spec p, .spec li { max-width: 42rem; }
 .spec code { background: var(--sunk); border-radius: 4px; padding: 1px 4px; }
@@ -295,7 +295,7 @@ textarea {
 <header class="topbar">
   <div class="topbar-inner">
     <button class="brand" type="button" data-go="home" aria-label="Skillgram home">
-      <svg width="24" height="24" viewBox="0 0 26 26" aria-hidden="true"><rect x="8" y="2" width="10" height="6" rx="2" fill="none" stroke="#ededef" stroke-width="1.8"/><rect x="2" y="18" width="9" height="6" rx="2" fill="none" stroke="#ededef" stroke-width="1.8"/><rect x="15" y="18" width="9" height="6" rx="3" fill="none" stroke="#ededef" stroke-width="1.8"/><path d="M13 8v4M13 12l-6 6M13 12l6 6" stroke="#8b9099" stroke-width="1.8" fill="none"/></svg>
+      <svg width="24" height="24" viewBox="0 0 26 26" aria-hidden="true"><rect x="8" y="2" width="10" height="6" rx="2" fill="none" stroke="#111318" stroke-width="1.8"/><rect x="2" y="18" width="9" height="6" rx="2" fill="none" stroke="#111318" stroke-width="1.8"/><rect x="15" y="18" width="9" height="6" rx="3" fill="none" stroke="#111318" stroke-width="1.8"/><path d="M13 8v4M13 12l-6 6M13 12l6 6" stroke="#8b9099" stroke-width="1.8" fill="none"/></svg>
       <b>Skillgram</b>
     </button>
     <nav class="nav" aria-label="Pages">
@@ -315,7 +315,7 @@ textarea {
 <div class="doc" id="view-home" hidden>
   <div class="home">
     <section class="hero">
-      <svg class="hero-mark" viewBox="0 0 200 220" aria-hidden="true" fill="none" stroke="#ededef" stroke-width="5">
+      <svg class="hero-mark" viewBox="0 0 200 220" aria-hidden="true" fill="none" stroke="#111318" stroke-width="5">
         <rect x="60" y="6" width="80" height="40" rx="10"/>
         <polygon points="70,90 130,90 146,110 130,130 70,130 54,110"/>
         <rect x="6" y="172" width="78" height="40" rx="20"/>
